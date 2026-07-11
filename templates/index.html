@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraTask | Premium Productivity Dashboard</title>
+    <meta name="description" content="Manage your tasks, track metrics, schedule subtasks, and get desktop notifications with a gorgeous glassmorphic todo application.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Glow Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Interactive Background Nebula Glow -->
+    <div class="bg-mouse-glow" id="bg-mouse-glow"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-container">
+            <!-- LEFT: Hero Section -->
+            <div class="auth-hero">
+                <div class="hero-badge"><i class="ti ti-sparkles"></i> Aura Workspace v2.0</div>
+                <h1 class="hero-title">Ascend to Peak Focus.</h1>
+                <p class="hero-subtitle">AuraTask is a beautifully designed, spatial ambient workspace crafted to streamline your tasks, track achievements, and elevate daily clarity.</p>
+                
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="ti ti-activity-heartbeat"></i></div>
+                        <div class="feature-text">
+                            <h4>Live Performance Metrics</h4>
+                            <p>Visualize task completion rates and priority distribution instantly.</p>
+                        </div>
+                     </div>
+                     <div class="feature-item">
+                        <div class="feature-icon"><i class="ti ti-bell-ringing"></i></div>
+                        <div class="feature-text">
+                            <h4>Dynamic Subtask Alarms</h4>
+                            <p>Snooze items and receive clean native desktop notifications.</p>
+                        </div>
+                     </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT: Auth Card -->
+            <div class="auth-card-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="logo">
+                            <i class="ti ti-flame animate-pulse"></i>
+                            <span>AuraTask</span>
+                        </div>
+                        <p id="auth-subtitle">Elevate your daily focus</p>
+                    </div>
+                    
+                    <!-- Auth Tab Toggles -->
+                    <div class="auth-tabs">
+                        <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
+                        <button id="tab-signup" class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-username"><i class="ti ti-user"></i> Username or Email</label>
+                            <input type="text" id="login-username" placeholder="Enter username or email" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password"><i class="ti ti-lock"></i> Password</label>
+                            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                        <div style="text-align: right; margin-bottom: 1.25rem; margin-top: -0.5rem;">
+                            <a href="#" onclick="showResetPasswordForm(event)" class="subtitle" style="text-decoration: none; color: var(--primary); font-weight: 500; font-size: 0.75rem;">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="login-submit-btn">
+                            <span>Log In</span> <i class="ti ti-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <!-- Signup Form -->
+                    <form id="signup-form" class="auth-form hidden" onsubmit="handleSignup(event)">
+                        <div class="form-group">
+                            <label for="signup-username"><i class="ti ti-user"></i> Username</label>
+                            <input type="text" id="signup-username" placeholder="Choose a username" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email"><i class="ti ti-mail"></i> Email Address</label>
+                            <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password"><i class="ti ti-lock"></i> Password</label>
+                            <input type="password" id="signup-password" placeholder="Create a strong password" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="signup-submit-btn">
+                            <span>Create Account</span> <i class="ti ti-sparkles"></i>
+                        </button>
+                    </form>
+
+                    <!-- Reset Password Form -->
+                    <form id="reset-form" class="auth-form hidden" onsubmit="handleResetPassword(event)">
+                        <div class="form-group">
+                            <label for="reset-username"><i class="ti ti-user"></i> Username</label>
+                            <input type="text" id="reset-username" placeholder="Enter your username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-email"><i class="ti ti-mail"></i> Registered Email</label>
+                            <input type="email" id="reset-email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-new-password"><i class="ti ti-lock"></i> New Password</label>
+                            <input type="password" id="reset-new-password" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-confirm-password"><i class="ti ti-circle-check"></i> Confirm New Password</label>
+                            <input type="password" id="reset-confirm-password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="reset-submit-btn" style="margin-bottom: 1rem;">
+                            <span>Reset Password</span> <i class="ti ti-shield-lock"></i>
+                        </button>
+                        <div style="text-align: center;">
+                            <a href="#" onclick="showLoginForm(event)" class="subtitle" style="text-decoration: none; color: var(--text-muted); font-size: 0.8rem;">Back to Log In</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <div id="app-screen" class="app-screen hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="ti ti-flame"></i>
+                    <span>AuraTask</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button id="nav-tasks" class="nav-btn active" onclick="switchTab('tasks')">
+                    <i class="ti ti-checkbox"></i>
+                    <span>Tasks</span>
+                </button>
+                <button id="nav-analytics" class="nav-btn" onclick="switchTab('analytics')">
+                    <i class="ti ti-chart-bar"></i>
+                    <span>Analytics</span>
+                </button>
+                <button id="nav-history" class="nav-btn" onclick="switchTab('history')">
+                    <i class="ti ti-history"></i>
+                    <span>Activity Log</span>
+                </button>
+                <button id="nav-settings" class="nav-btn" onclick="switchTab('settings')">
+                    <i class="ti ti-settings"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <!-- Categories Section -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <span>CATEGORIES</span>
+                    <button class="icon-btn" onclick="openCategoryModal()" title="Add Category" id="btn-add-category-nav">
+                        <i class="ti ti-plus"></i>
+                    </button>
+                </div>
+                <ul id="categories-list" class="sidebar-list">
+                    <!-- Dynamic categories loaded here -->
+                </ul>
+            </div>
+
+            <!-- User Footer Profile -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar" id="user-avatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="user-display-name">Username</span>
+                        <span class="user-role">Premium Member</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()" title="Log Out" id="btn-logout-sidebar">
+                    <i class="ti ti-logout"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top App Bar -->
+            <header class="app-header">
+                <div class="header-left">
+                    <h1 id="page-title">Tasks</h1>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                        <p id="current-date-display" class="subtitle" style="margin: 0;"></p>
+                        <span class="subtitle" style="opacity: 0.5; margin: 0;">•</span>
+                        <p id="current-clock-display" class="subtitle" style="margin: 0; font-weight: 600; color: var(--primary);"></p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-theme" onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle Theme">
+                        <i class="ti ti-sun" id="theme-icon-light"></i>
+                        <i class="ti ti-moon hidden" id="theme-icon-dark"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openTaskModal()" id="btn-new-task-header">
+                        <i class="ti ti-plus"></i> <span>Add Task</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB CONTENT: TASKS -->
+            <div id="tab-content-tasks" class="tab-content">
+                <!-- Stats Overview Widgets -->
+                <section class="stats-grid" id="stats-dashboard">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-blue"><i class="ti ti-list-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-total-tasks">0</span>
+                            <span class="stat-label">Total Tasks</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-amber"><i class="ti ti-clock-play"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-pending-tasks">0</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green"><i class="ti ti-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-completed-tasks">0</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-purple"><i class="ti ti-percentage"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-completion-rate">0%</span>
+                            <span class="stat-label">Completion Rate</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Filter and Sort Bar -->
+                <section class="filter-bar">
+                    <div class="search-box">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="search-input" placeholder="Search tasks..." oninput="handleSearchFilterChange()">
+                    </div>
+                    <div class="filter-actions">
+                        <!-- Status Filters -->
+                        <div class="segmented-control">
+                            <button class="segmented-btn active" onclick="setStatusFilter('all', this)">All</button>
+                            <button class="segmented-btn" onclick="setStatusFilter('active', this)">Active</button>
+                            <button class="segmented-btn" onclick="setStatusFilter('completed', this)">Completed</button>
+                        </div>
+                        
+                        <!-- Priority Filters -->
+                        <select id="filter-priority" class="form-select" onchange="handleSearchFilterChange()">
+                            <option value="">All Priorities</option>
+                            <option value="high">High Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+
+                        <!-- Sort Options -->
+                        <div class="sort-controls">
+                            <select id="sort-by" class="form-select" onchange="handleSearchFilterChange()">
+                                <option value="due_date">Sort by Due Date</option>
+                                <option value="priority">Sort by Priority</option>
+                                <option value="created_at">Sort by Date Created</option>
+                            </select>
+                            <button class="sort-order-btn" onclick="toggleSortOrder()" id="btn-sort-order" title="Change Sort Direction">
+                                <i class="ti ti-sort-ascending" id="sort-icon-asc"></i>
+                                <i class="ti ti-sort-descending hidden" id="sort-icon-desc"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Task List Containers -->
+                <div class="tasks-container">
+                    <div id="empty-state" class="empty-state hidden">
+                        <i class="ti ti-confetti-storm"></i>
+                        <h3>All caught up!</h3>
+                        <p>Create a task to kickstart your productivity journey.</p>
+                        <button class="btn btn-secondary mt-3" onclick="openTaskModal()">Create a Task</button>
+                    </div>
+                    <div id="tasks-grid" class="tasks-grid-list">
+                        <!-- Dynamic task cards loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: ANALYTICS -->
+            <div id="tab-content-analytics" class="tab-content hidden">
+                <div class="analytics-grid">
+                    <!-- Weekly completion line chart -->
+                    <div class="chart-card large-chart">
+                        <h3>Weekly Completion Trend</h3>
+                        <p class="subtitle">Completed tasks per day (last 7 days)</p>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Priority Distribution -->
+                    <div class="chart-card">
+                        <h3>Priority Distribution</h3>
+                        <p class="subtitle">Current task breakdown by priority</p>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Category Distribution -->
+                    <div class="chart-card">
+                        <h3>Category Distribution</h3>
+                        <p class="subtitle">Task volumes across your categories</p>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: HISTORY / AUDIT LOG -->
+            <div id="tab-content-history" class="tab-content hidden">
+                <div class="history-card">
+                    <div class="history-header">
+                        <h3>Activity Timeline</h3>
+                        <p class="subtitle">Your productivity audit trail (last 50 events)</p>
+                    </div>
+                    <div class="timeline" id="history-timeline">
+                        <!-- Dynamic logs here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: SETTINGS -->
+            <div id="tab-content-settings" class="tab-content hidden">
+                <div class="history-card">
+                    <div class="history-header">
+                        <h3>Account Settings</h3>
+                        <p class="subtitle">Update your password to keep your account secure</p>
+                    </div>
+                    
+                    <form id="change-password-form" onsubmit="handleChangePassword(event)" style="max-width: 400px; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label for="change-current-password"><i class="ti ti-lock"></i> Current Password</label>
+                            <input type="password" id="change-current-password" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="change-new-password"><i class="ti ti-lock-open"></i> New Password</label>
+                            <input type="password" id="change-new-password" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="change-confirm-password"><i class="ti ti-circle-check"></i> Confirm New Password</label>
+                            <input type="password" id="change-confirm-password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="change-pw-btn" style="margin-top: 0.5rem;">
+                            <span>Update Password</span> <i class="ti ti-shield-lock"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD / EDIT TASK -->
+    <div id="task-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="task-modal-title">Create Task</h3>
+                <button class="icon-btn" onclick="closeTaskModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <form id="task-form" onsubmit="handleTaskSubmit(event)">
+                <input type="hidden" id="task-id">
+                
+                <div class="form-group">
+                    <label for="task-title">Title</label>
+                    <input type="text" id="task-title" placeholder="e.g., Design homepage dashboard" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-desc">Description (Optional)</label>
+                    <textarea id="task-desc" rows="3" placeholder="Describe the objectives or details..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="task-category">Category</label>
+                        <select id="task-category" class="form-select">
+                            <option value="">No Category</option>
+                            <!-- Dynamic category list options -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-6">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="task-due">Due Date & Time</label>
+                        <input type="datetime-local" id="task-due" class="form-input-date">
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="task-recurrence">Recurrence</label>
+                        <select id="task-recurrence" class="form-select">
+                            <option value="none" selected>None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-task">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CATEGORY -->
+    <div id="category-modal" class="modal-overlay hidden">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Add Category</h3>
+                <button class="icon-btn" onclick="closeCategoryModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <form id="category-form" onsubmit="handleCategorySubmit(event)">
+                <div class="form-group">
+                    <label for="category-name">Category Name</label>
+                    <input type="text" id="category-name" placeholder="e.g., Fitness, Study" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Label Color</label>
+                    <div class="color-picker-grid">
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#ef4444" checked>
+                            <span style="background-color: #ef4444;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#f59e0b">
+                            <span style="background-color: #f59e0b;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#10b981">
+                            <span style="background-color: #10b981;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#3b82f6">
+                            <span style="background-color: #3b82f6;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#8b5cf6">
+                            <span style="background-color: #8b5cf6;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="cat-color" value="#ec4899">
+                            <span style="background-color: #ec4899;"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Core Script -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
