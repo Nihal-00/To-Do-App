@@ -9,18 +9,18 @@ from database import db, User, Category, Task, Subtask, AuditLog, create_databas
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize database auto-creation
-create_database_if_not_exists(app.config)
-
 db.init_app(app)
 
-# Helper function to create all tables (runs on startup)
-with app.app_context():
-    try:
-        db.create_all()
-    except Exception as e:
-        print(f"Error initializing database tables: {e}")
+# Skip database initialization during GitHub Actions
+if os.getenv("GITHUB_ACTIONS") != "true":
+    create_database_if_not_exists(app.config)
 
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✅ Database initialized.")
+        except Exception as e:
+            print(f"Error initializing database tables: {e}")
 # Helper decorator for login required routes
 def login_required(f):
     @wraps(f)
@@ -639,8 +639,7 @@ def get_audit_logs():
         
     return jsonify([log.to_dict() for log in logs])
 
-with app.app_context():
-    db.create_all()
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == "__main__":
+    if os.getenv("GITHUB_ACTIONS") != "true":
+        app.run(host="0.0.0.0", port=5000, debug=True)

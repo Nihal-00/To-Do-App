@@ -10,6 +10,27 @@ jobs:
   ci-cd:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: todo_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: todo_db
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -25,11 +46,26 @@ jobs:
           pip install -r requirements.txt
           pip install pytest flake8
 
+      - name: Wait for MySQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+          for i in {1..30}; do
+            mysqladmin ping \
+              -h127.0.0.1 \
+              -uroot \
+              -proot && break
+
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
       - name: Run Flake8
         run: |
           flake8 . --count --max-line-length=120 --statistics || true
 
-      - name: Run Pytest
+      - name: Run Tests
         run: |
           pytest
 
@@ -39,7 +75,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract Version
+      - name: Set Version
         run: |
           echo "VERSION=v1.0.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
 
