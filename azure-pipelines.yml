@@ -112,5 +112,5 @@ stages:
               azureResourceGroup: "todo-aks-rg"
               kubernetesCluster: "todo-aks"
               manifests: |
-                $(Build.SourcesDirectory)/k8s/deployment.yaml
-                $(Build.SourcesDirectory)/k8s/service.yaml
+                 k8s/deployment.yaml
+                 k8s/service.yaml
