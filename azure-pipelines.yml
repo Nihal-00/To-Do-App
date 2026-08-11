@@ -40,7 +40,6 @@ stages:
         testResultsFiles: "**/test-results.xml"
         failTaskOnFailedTests: true
 
-
 # =========================
 # DEV
 # =========================
@@ -83,7 +82,6 @@ stages:
                 $(Build.SourcesDirectory)/k8s/deployment.yaml
                 $(Build.SourcesDirectory)/k8s/service.yaml
 
-
 # =========================
 # STAGING
 # =========================
@@ -112,5 +110,5 @@ stages:
               azureResourceGroup: "todo-aks-rg"
               kubernetesCluster: "todo-aks"
               manifests: |
-                 k8s/deployment.yaml
-                 k8s/service.yaml
+                $(Build.SourcesDirectory)/k8s/deployment.yaml
+                $(Build.SourcesDirectory)/k8s/service.yaml
