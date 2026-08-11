@@ -6,6 +6,7 @@ stages:
 # =========================
 # BUILD
 # =========================
+
 - stage: Build
   displayName: Build
   jobs:
@@ -43,6 +44,7 @@ stages:
 # =========================
 # DEV
 # =========================
+
 - stage: Dev
   displayName: Deploy to Dev
   dependsOn: Build
@@ -57,6 +59,17 @@ stages:
       runOnce:
         deploy:
           steps:
+
+          - script: |
+              echo "Current directory:"
+              pwd
+
+              echo "Repository contents:"
+              find $(Build.SourcesDirectory) -maxdepth 3 -type f | sort
+
+              echo "Kubernetes manifests:"
+              ls -la $(Build.SourcesDirectory)/k8s || true
+            displayName: "Check Kubernetes manifests"
 
           - task: KubernetesManifest@1
             displayName: "Deploy to AKS - Dev"
@@ -74,6 +87,7 @@ stages:
 # =========================
 # STAGING
 # =========================
+
 - stage: Staging
   displayName: Deploy to Staging
   dependsOn: Dev
