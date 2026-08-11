@@ -4,9 +4,6 @@ trigger:
 
 stages:
 
-# =========================
-# BUILD
-# =========================
 - stage: Build
   displayName: Build
   jobs:
@@ -40,10 +37,6 @@ stages:
         testResultsFiles: "**/test-results.xml"
         failTaskOnFailedTests: true
 
-
-# =========================
-# DEV
-# =========================
 - stage: Dev
   displayName: Deploy to Dev
   dependsOn: Build
@@ -59,10 +52,6 @@ stages:
               echo "Deploying application to DEV..."
             displayName: "Deploy to Dev"
 
-
-# =========================
-# STAGING
-# =========================
 - stage: Staging
   displayName: Deploy to Staging
   dependsOn: Dev
