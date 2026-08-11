@@ -3,6 +3,9 @@ trigger:
 
 stages:
 
+# =========================
+# BUILD
+# =========================
 - stage: Build
   displayName: Build
   jobs:
@@ -36,32 +39,64 @@ stages:
         testResultsFiles: "**/test-results.xml"
         failTaskOnFailedTests: true
 
+
+# =========================
+# DEV
+# =========================
 - stage: Dev
   displayName: Deploy to Dev
   dependsOn: Build
+  condition: succeeded()
+
   jobs:
   - deployment: DeployDev
     displayName: Deploy to Dev
     environment: dev
+
     strategy:
       runOnce:
         deploy:
           steps:
-          - script: |
-              echo "Deploying application to DEV..."
-            displayName: "Deploy to Dev"
 
+          - task: KubernetesManifest@1
+            displayName: "Deploy to AKS - Dev"
+            inputs:
+              action: deploy
+              connectionType: azureResourceManager
+              azureSubscriptionConnection: "todo-aks-connection"
+              azureResourceGroup: "todo-aks-rg"
+              kubernetesCluster: "todo-aks"
+              manifests: |
+                $(Build.SourcesDirectory)/k8s/deployment.yaml
+                $(Build.SourcesDirectory)/k8s/service.yaml
+
+
+# =========================
+# STAGING
+# =========================
 - stage: Staging
   displayName: Deploy to Staging
   dependsOn: Dev
+  condition: succeeded()
+
   jobs:
   - deployment: DeployStaging
     displayName: Deploy to Staging
     environment: staging
+
     strategy:
       runOnce:
         deploy:
           steps:
-          - script: |
-              echo "Deploying application to STAGING..."
-            displayName: "Deploy to Staging"
+
+          - task: KubernetesManifest@1
+            displayName: "Deploy to AKS - Staging"
+            inputs:
+              action: deploy
+              connectionType: azureResourceManager
+              azureSubscriptionConnection: "todo-aks-connection"
+              azureResourceGroup: "todo-aks-rg"
+              kubernetesCluster: "todo-aks"
+              manifests: |
+                $(Build.SourcesDirectory)/k8s/deployment.yaml
+                $(Build.SourcesDirectory)/k8s/service.yaml
