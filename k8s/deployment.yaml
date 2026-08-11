@@ -1,4 +1,3 @@
-```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,4 +17,3 @@ spec:
           image: todoacr2026.azurecr.io/todo-app:v1
           ports:
             - containerPort: 5000
-```
