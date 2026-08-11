@@ -1,0 +1,81 @@
+```yaml
+trigger:
+- main
+
+stages:
+
+# =========================
+# BUILD
+# =========================
+- stage: Build
+  displayName: Build
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:
+
+    - task: UsePythonVersion@0
+      displayName: "Set up Python"
+      inputs:
+        versionSpec: "3.x"
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: "Restore dependencies"
+
+    - script: |
+        python -m compileall .
+      displayName: "Build"
+
+    - script: |
+        pip install pytest
+        pytest --junitxml=test-results.xml
+      displayName: "Run Tests"
+
+    - task: PublishTestResults@2
+      displayName: "Publish Test Results"
+      inputs:
+        testResultsFormat: "JUnit"
+        testResultsFiles: "**/test-results.xml"
+        failTaskOnFailedTests: true
+
+
+# =========================
+# DEV
+# =========================
+- stage: Dev
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - deployment: DeployDev
+    displayName: Deploy to Dev
+    environment: dev
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "Deploying application to DEV..."
+            displayName: "Deploy to Dev"
+
+
+# =========================
+# STAGING
+# =========================
+- stage: Staging
+  displayName: Deploy to Staging
+  dependsOn: Dev
+  jobs:
+  - deployment: DeployStaging
+    displayName: Deploy to Staging
+    environment: staging
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "Deploying application to STAGING..."
+            displayName: "Deploy to Staging"
+```
+
